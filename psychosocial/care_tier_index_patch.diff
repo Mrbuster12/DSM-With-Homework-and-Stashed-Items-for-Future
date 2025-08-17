@@ -1,0 +1,22 @@
+--- index.html (before)
++++ index.html (after)
+@@ -835,5 +835,19 @@
+ <script src="assets/js/tendencies_addon.js"></script>
+ 
+ <script src="assets/js/remove_legacy_bop.js"></script>
++
++<!-- Care Tier Panel Attach (non-destructive) -->
++<!-- jsPDF CDN for PDF export -->
++<script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
++<script type="module">
++  // Expose jsPDF to modules
++  window.jsPDF = window.jspdf.jsPDF;
++
++  // Attach Care Tier panel using Shadow DOM (safe, non-destructive)
++  import './assets/care-tier/sta.js';
++  import './assets/care-tier/csvLoader.js';
++  import './assets/care-tier/pdfExport.js';
++  import './assets/care-tier/care_tier_attach.js';
++</script>
+ </body>
+ </html>

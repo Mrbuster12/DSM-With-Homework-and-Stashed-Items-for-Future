@@ -1,0 +1,91 @@
+
+/* DAP auto-fill: if Description/Goals are empty, derive from Scenario + D/A/P content */
+(() => {
+  function getText(id) {
+    const el = document.querySelector(id);
+    return (el && (el.value || el.textContent || '')).trim();
+  }
+  function setText(id, text) {
+    const el = document.querySelector(id);
+    if (!el) return;
+    if ('value' in el) el.value = text;
+    else el.textContent = text;
+  }
+  function sentenceCase(s) {
+    if (!s) return s;
+    return s.charAt(0).toUpperCase() + s.slice(1);
+  }
+  function unique(list) {
+    return Array.from(new Set(list.filter(Boolean)));
+  }
+
+  // Basic goal templates by assessment keyword
+  const GOAL_LIBRARY = {
+    depression: [
+      "Increase daily activation to 5 activities/week",
+      "Reduce PHQ-9 score by 5 points in 6 weeks",
+      "Establish consistent sleep schedule (7–8 hrs)"
+    ],
+    anxiety: [
+      "Practice diaphragmatic breathing 2× daily",
+      "Reduce GAD-7 score by 4 points in 6 weeks",
+      "Gradual exposure to avoided situations (1/week)"
+    ],
+    relapse: [
+      "Attend 7 recovery meetings/week for 4 weeks",
+      "Implement craving log with HALT check-ins daily",
+      "Secure accountability partner and share plan"
+    ]
+  };
+
+  // Parse the on-screen note if present
+  function derive() {
+    // Try to locate fields by common ids/names; fallback to data-attributes
+    const scenario = getText('#scenario, [data-field="scenario"], .note-scenario');
+    let desc = getText('#description, [data-field="description"], .note-description');
+    let goals = getText('#goals, [data-field="goals"], .note-goals');
+
+    const d = getText('#dap-data, [data-field="dap-data"], .dap-data');
+    const a = getText('#dap-assessment, [data-field="dap-assessment"], .dap-assessment');
+    const p = getText('#dap-plan, [data-field="dap-plan"], .dap-plan');
+
+    // Auto Description
+    if (!desc) {
+      const bits = unique([
+        scenario && `Session focused on ${scenario.toLowerCase()}.`,
+        d && `Client reported: ${sentenceCase(d)}.`,
+        a && `Clinician impression: ${sentenceCase(a)}.`
+      ]);
+      desc = bits.join(' ');
+      if (desc) setText('#description, [data-field="description"], .note-description', desc);
+      console.log('[DAP] Autofilled Description ->', desc);
+    }
+
+    // Auto Goals
+    if (!goals) {
+      const key = (a || d || '').toLowerCase();
+      let bank = [];
+      if (/\bdepress/.test(key)) bank = bank.concat(GOAL_LIBRARY.depression);
+      if (/\banx/.test(key)) bank = bank.concat(GOAL_LIBRARY.anxiety);
+      if (/\brelaps/.test(key) || /\buse\b|\bcraving/.test(key)) bank = bank.concat(GOAL_LIBRARY.relapse);
+      if (bank.length === 0) {
+        bank = [
+          "Identify 2 personal strengths and 2 supports",
+          "Complete one measurable homework task before next session",
+          "Set and review 1 short-term objective weekly"
+        ];
+      }
+      goals = bank.slice(0,3).map((g,i)=>`${i+1}. ${g}`).join('\n');
+      setText('#goals, [data-field="goals"], .note-goals', goals);
+      console.log('[DAP] Autofilled Goals ->', goals);
+    }
+  }
+
+  // Expose as a small API and auto-run on load
+  window.DAPAutofill = { run: derive };
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', derive);
+  } else {
+    setTimeout(derive, 0);
+  }
+})();

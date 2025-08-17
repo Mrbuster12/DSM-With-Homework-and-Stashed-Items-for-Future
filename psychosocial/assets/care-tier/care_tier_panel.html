@@ -1,0 +1,37 @@
+<template id="care-tier-panel">
+  <style>
+    :host { all: initial; font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; }
+    .wrap { border: 1px solid #ddd; border-radius: 8px; padding: 12px; background: #fff; max-width: 820px; }
+    .controls { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 8px; }
+    label { font-weight: 600; }
+    select, input[type="file"], button { padding: 6px 10px; }
+    .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    pre { background: #f8f8f8; border-radius: 6px; padding: 10px; min-height: 160px; overflow:auto; }
+    .badge { display:inline-block; padding:2px 8px; border-radius:12px; border:1px solid #ccc; font-size:12px;}
+  </style>
+  <div class="wrap">
+    <div class="controls">
+      <span class="badge">STM · CTC · DRI</span>
+      <label>Estimator</label>
+      <select id="toggle">
+        <option value="off">Off</option>
+        <option value="on" selected>On</option>
+      </select>
+
+      <label>Load STM CSV</label>
+      <input type="file" id="csv" accept=".csv" />
+
+      <button id="export" type="button">Export DAP PDF</button>
+    </div>
+    <div class="cols">
+      <div>
+        <h4>Result (JSON)</h4>
+        <pre id="json"></pre>
+      </div>
+      <div>
+        <h4>DAP Injection Block</h4>
+        <pre id="dap"></pre>
+      </div>
+    </div>
+  </div>
+</template>

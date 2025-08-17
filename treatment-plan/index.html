@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Treatment Plan</title>
+  <style>
+    body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;margin:20px;padding:0;background:#f9f9f9;}
+    header{display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #ddd;padding-bottom:8px;margin-bottom:12px;background:#fff;}
+    h2{margin:0;font-size:1.5rem;}
+    a[href] { color:#06c;text-decoration:none; }
+    .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;}
+    label{font-weight:bold;margin-top:12px;display:block;}
+    select, input[type=text], textarea{width:100%;padding:8px;border:1px solid #ccc;border-radius:8px;background:#fff;box-sizing:border-box;}
+    textarea{height:100px;resize:vertical;}
+    pre{white-space:pre-wrap;border:1px solid #e3e3e3;border-radius:12px;padding:12px;background:#fafafa;margin-top:12px;}
+    .btn-row{margin-top:12px;display:flex;gap:12px;align-items:center;}
+    button{padding:.4rem .7rem;border:1px solid #aaa;border-radius:8px;background:#f7f7f7;cursor:pointer;}
+  </style>
+</head>
+<body>
+  <header>
+    <h2>Treatment Plan</h2>
+    <!-- back to hub link retains bridge key via enforce-bridge.js -->
+    <a href="/index.html">← Back to Hub</a>
+  </header>
+
+  <!-- Care tier selection and LOC -->
+  <div class="grid">
+    <div>
+      <label for="ctc">Care Tier</label>
+      <select id="ctc">
+        <option value="CTC-1">CTC-1</option>
+        <option value="CTC-2">CTC-2</option>
+        <option value="CTC-3">CTC-3</option>
+        <option value="CTC-4">CTC-4</option>
+        <option value="CTC-5">CTC-5</option>
+      </select>
+    </div>
+    <div>
+      <label for="loc">Level of Care</label>
+      <input id="loc" type="text" placeholder="Auto-filled from tier"/>
+    </div>
+  </div>
+
+  <!-- Treatment plan fields -->
+  <label for="tpProblems">Problems</label>
+  <textarea id="tpProblems" placeholder="Describe the primary problems…"></textarea>
+
+  <label for="tpGoals">Goals</label>
+  <textarea id="tpGoals" placeholder="Summarize therapeutic goals…"></textarea>
+
+  <label for="tpObjectives">Objectives</label>
+  <textarea id="tpObjectives" placeholder="List measurable objectives…"></textarea>
+
+  <label for="tpInterventions">Interventions</label>
+  <textarea id="tpInterventions" placeholder="Outline planned interventions…"></textarea>
+
+  <h3>Output</h3>
+  <pre id="tpOut"></pre>
+
+  <div class="btn-row">
+    <button id="tpDownload">Download (.txt)</button>
+  </div>
+
+  <script>
+  // Map care tier to level of care descriptions
+  const LOC_MAP = {
+    'CTC-1': 'Outpatient weekly therapy',
+    'CTC-2': 'Outpatient + skills / biweekly',
+    'CTC-3': 'Intensive Outpatient (IOP) / 3–5x per week',
+    'CTC-4': 'Partial Hospitalization (PHP) / daily',
+    'CTC-5': 'Inpatient / Crisis stabilization'
+  };
+  const selTier = document.getElementById('ctc');
+  const locInput = document.getElementById('loc');
+  const outPre = document.getElementById('tpOut');
+  const fields = {
+    problems: document.getElementById('tpProblems'),
+    goals: document.getElementById('tpGoals'),
+    objectives: document.getElementById('tpObjectives'),
+    interventions: document.getElementById('tpInterventions')
+  };
+  // Auto‑fill LOC when tier changes
+  function updateLOC(){ locInput.value = LOC_MAP[selTier.value] || ''; }
+  selTier.addEventListener('change', updateLOC);
+  updateLOC();
+  // Render output preview
+  function render(){
+    const ts = new Date().toLocaleString();
+    const txt = `Timestamp: ${ts}\nTreatment Plan\n- Care Tier: ${selTier.value}\n- Level of Care: ${locInput.value}\n- Problems: ${fields.problems.value || '—'}\n- Goals: ${fields.goals.value || '—'}\n- Objectives: ${fields.objectives.value || '—'}\n- Interventions: ${fields.interventions.value || '—'}`;
+    if (outPre.textContent !== txt) outPre.textContent = txt;
+  }
+  document.addEventListener('input', render);
+  render();
+  // Download txt
+  document.getElementById('tpDownload').addEventListener('click', (e) => {
+    e.preventDefault();
+    const blob = new Blob([(outPre.textContent || '') + '\n'], {type: 'text/plain;charset=utf-8'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'TreatmentPlan_' + new Date().toISOString().replace(/[:.]/g, '-') + '.txt';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  });
+  </script>
+  <!-- Bridge and Interop scripts -->
+  <script src="/shared/bridge.js?v=5"></script>
+  <script src="/shared/enforce-bridge.js?v=5"></script>
+  <script src="/shared/core/interop-hotfix.js"></script>
+</body>
+</html>
